@@ -15,16 +15,425 @@
         <link rel="stylesheet" href="css/leaflet.photon.css">
         <link rel="stylesheet" href="css/leaflet-measure.css">
         <style>
+        :root {
+            --brand-red: #c32026;
+            --brand-red-dark: #8f161c;
+            --brand-red-soft: #f6d9db;
+            --brand-ink: #22252b;
+            --brand-muted: #5f6672;
+            --brand-surface: rgba(255, 255, 255, 0.94);
+            --brand-surface-warm: rgba(252, 247, 247, 0.95);
+            --brand-border: rgba(195, 32, 38, 0.16);
+            --brand-white: #ffffff;
+        }
         html, body, #map {
             width: 100%;
             height: 100%;
             padding: 0;
             margin: 0;
         }
+        .leaflet-popup-content-wrapper {
+            border-radius: 18px;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+        }
+        .info,
+        .abstractUncollapsed,
+        .leaflet-control-layers {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .info {
+            min-width: 280px;
+            padding: 14px 16px 12px;
+            border: 1px solid var(--brand-border);
+            border-radius: 16px;
+            background: var(--brand-surface-warm);
+            box-shadow: 0 18px 34px rgba(15, 23, 42, 0.22);
+        }
+        .map-title__kicker {
+            margin: 0 0 4px;
+            font: 700 11px/1.2 "Segoe UI", Tahoma, sans-serif;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--brand-red);
+        }
+        .map-title__heading {
+            margin: 0;
+            font: 800 30px/1 "Segoe UI", Tahoma, sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            color: var(--brand-ink);
+        }
+        .map-title__subtext {
+            margin: 6px 0 0;
+            font: 600 12px/1.4 "Segoe UI", Tahoma, sans-serif;
+            color: var(--brand-muted);
+        }
+        .abstractUncollapsed {
+            margin-top: 10px;
+            max-width: 280px;
+            padding: 14px 16px;
+            border: 1px solid var(--brand-border);
+            border-radius: 16px;
+            background: var(--brand-surface) !important;
+            box-shadow: 0 14px 28px rgba(15, 23, 42, 0.18);
+            font: 500 13px/1.6 "Segoe UI", Tahoma, sans-serif;
+            color: var(--brand-muted) !important;
+        }
+        .abstractUncollapsed strong {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 11px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--brand-red);
+        }
+        .project-notice {
+            position: fixed;
+            inset: 0;
+            z-index: 1200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: rgba(34, 37, 43, 0.34);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+        .project-notice[hidden] {
+            display: none;
+        }
+        .project-notice__card {
+            width: min(460px, 92vw);
+            padding: 24px 24px 20px;
+            border-radius: 22px;
+            border: 1px solid var(--brand-border);
+            background: var(--brand-surface);
+            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.24);
+        }
+        .project-notice__eyebrow {
+            margin: 0 0 8px;
+            font: 800 11px/1 "Segoe UI", Tahoma, sans-serif;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--brand-red);
+        }
+        .project-notice__title {
+            margin: 0 0 10px;
+            font: 800 28px/1.05 "Segoe UI", Tahoma, sans-serif;
+            color: var(--brand-ink);
+        }
+        .project-notice__text {
+            margin: 0;
+            font: 500 15px/1.7 "Segoe UI", Tahoma, sans-serif;
+            color: var(--brand-muted);
+        }
+        .project-notice__actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 18px;
+        }
+        .project-notice__button {
+            border: none;
+            border-radius: 999px;
+            padding: 10px 18px;
+            background: var(--brand-red);
+            color: var(--brand-white);
+            font: 700 14px/1 "Segoe UI", Tahoma, sans-serif;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(195, 32, 38, 0.2);
+        }
+        .project-notice__button:hover {
+            background: var(--brand-red-dark);
+        }
+        .leaflet-control-layers {
+            min-width: 250px;
+            padding: 12px;
+            border: 1px solid var(--brand-border);
+            border-radius: 22px;
+            background: var(--brand-surface) !important;
+            box-shadow: 0 16px 32px rgba(15, 23, 42, 0.18) !important;
+            display: block;
+        }
+        .leaflet-control-layers-expanded {
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+        .leaflet-control-layers-list {
+            width: 100%;
+            margin-top: 10px;
+        }
+        .leaflet-control-layers-group-title {
+            margin: 12px 2px 6px;
+            font: 800 11px/1 "Segoe UI", Tahoma, sans-serif;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--brand-muted);
+        }
+        .leaflet-control-layers-group-title:first-child {
+            margin-top: 0;
+        }
+        .leaflet-control-layers-selector {
+            accent-color: var(--brand-red);
+            width: 15px;
+            height: 15px;
+            margin: 0;
+        }
+        .leaflet-control-layers label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 8px 0;
+            padding: 8px 10px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.72);
+            font: 600 14px/1.4 "Segoe UI", Tahoma, sans-serif;
+            color: var(--brand-ink);
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+        .leaflet-control-layers label:hover {
+            background: rgba(246, 217, 219, 0.36);
+            transform: translateY(-1px);
+        }
+        .layer-entry {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+        .layer-entry__symbol {
+            flex: 0 0 auto;
+            position: relative;
+            width: 18px;
+            height: 18px;
+            border-radius: 999px;
+            border: none;
+            background: #b7b1b3;
+            box-shadow: 0 6px 12px rgba(34, 37, 43, 0.22);
+        }
+        .layer-entry__symbol::after {
+            position: absolute;
+            inset: 3px;
+            display: block;
+            background: center / contain no-repeat url("images/museo.png");
+        }
+        .layer-entry__symbol--base {
+            border-radius: 5px;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            background:
+                linear-gradient(135deg, #ffffff, #f3f4f6),
+                linear-gradient(45deg, #d1d5db 25%, #f8fafc 25% 50%, #d1d5db 50% 75%, #f8fafc 75%);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+        }
+        .layer-entry__symbol--base::after {
+            display: none;
+        }
+        .layer-entry__symbol--satellite {
+            border-radius: 5px;
+            border: 1px solid rgba(30, 41, 59, 0.18);
+            background:
+                linear-gradient(135deg, rgba(14, 116, 144, 0.95), rgba(59, 130, 246, 0.5)),
+                linear-gradient(45deg, #d6d3d1 25%, #b91c1c 25% 50%, #1d4ed8 50% 75%, #14532d 75%);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+        }
+        .layer-entry__symbol--satellite::after {
+            display: none;
+        }
+        .leaflet-control-layers-toggle::after {
+            font-weight: 800;
+            color: var(--brand-muted);
+        }
+        .leaflet-control-layers-expanded .leaflet-control-layers-toggle {
+            width: 30px;
+            height: 30px;
+            margin-bottom: 0;
+            margin-left: auto;
+            border-radius: 999px;
+            background: rgba(195, 32, 38, 0.08);
+        }
+        .leaflet-control-layers-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(195, 32, 38, 0.12);
+        }
+        .leaflet-control-layers-title {
+            font: 800 12px/1 "Segoe UI", Tahoma, sans-serif;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--brand-red);
+        }
+        .leaflet-marker-icon {
+            filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.25));
+        }
+        .museum-marker {
+            position: relative;
+            width: 34px;
+            height: 34px;
+            border-radius: 999px;
+            border: none;
+            background: linear-gradient(180deg, #c6c1c2 0%, #a8a1a3 100%);
+            box-shadow: 0 8px 18px rgba(34, 37, 43, 0.28);
+        }
+        .museum-marker::before {
+            content: "";
+            position: absolute;
+            inset: 7px;
+            display: block;
+            background: center / contain no-repeat url("images/museo.png");
+        }
+        .museum-marker__icon {
+            display: none;
+        }
+        .marker-cluster-small,
+        .marker-cluster-medium,
+        .marker-cluster-large {
+            background: transparent;
+            border: none;
+        }
+        .marker-cluster-small div,
+        .marker-cluster-medium div,
+        .marker-cluster-large div {
+            width: 34px;
+            height: 34px;
+            margin-left: 0;
+            margin-top: 0;
+            border-radius: 999px;
+            background: #56504f;
+            color: var(--brand-white);
+            font: 700 13px/34px "Segoe UI", Tahoma, sans-serif;
+            box-shadow: 0 6px 14px rgba(34, 37, 43, 0.16);
+        }
+        .marker-cluster {
+            width: 34px !important;
+            height: 34px !important;
+            border-radius: 999px;
+            background-clip: padding-box;
+        }
+        .marker-cluster span {
+            line-height: 34px;
+        }
+        .leaflet-popup-content {
+            margin: 0;
+            min-width: 280px;
+        }
+        .museum-popup {
+            width: min(420px, 78vw);
+            color: var(--brand-ink);
+            font-family: "Segoe UI", Tahoma, sans-serif;
+        }
+        .museum-popup__header {
+            padding: 18px 20px 10px;
+            border-bottom: 1px solid #e5e7eb;
+            background: linear-gradient(135deg, #fff4f4 0%, #ffffff 100%);
+        }
+        .museum-popup__eyebrow {
+            margin: 0 0 6px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--brand-red);
+        }
+        .museum-popup__title {
+            margin: 0;
+            font-size: 20px;
+            line-height: 1.2;
+            font-weight: 700;
+            color: var(--brand-ink);
+        }
+        .museum-popup__body {
+            padding: 16px 20px 20px;
+        }
+        .museum-popup__grid {
+            display: grid;
+            gap: 10px;
+        }
+        .museum-popup__item {
+            padding: 10px 12px;
+            border-radius: 12px;
+            background: #fbfbfc;
+            border: 1px solid rgba(195, 32, 38, 0.1);
+        }
+        .museum-popup__label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--brand-muted);
+        }
+        .museum-popup__value {
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--brand-ink);
+            word-break: break-word;
+        }
+        .museum-popup__gallery {
+            display: grid;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .museum-popup__photo {
+            overflow: hidden;
+            border-radius: 14px;
+            background: #f8f4f4;
+            border: 1px solid rgba(195, 32, 38, 0.12);
+        }
+        .museum-popup__photo img {
+            display: block;
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+        }
+        @media (max-width: 640px) {
+            .info {
+                min-width: 220px;
+                padding: 12px 14px;
+            }
+            .map-title__heading {
+                font-size: 22px;
+            }
+            .map-title__subtext {
+                font-size: 11px;
+            }
+            .project-notice__card {
+                padding: 20px 18px 18px;
+            }
+            .project-notice__title {
+                font-size: 24px;
+            }
+            .project-notice__text {
+                font-size: 14px;
+            }
+            .museum-popup {
+                width: min(320px, 82vw);
+            }
+            .museum-popup__header,
+            .museum-popup__body {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+            .leaflet-control-layers {
+                min-width: 200px;
+            }
+        }
         </style>
         <title>MUSEOS EN EL CASCO VIEJO</title>
     </head>
     <body>
+        <div class="project-notice" id="project-notice">
+            <div class="project-notice__card" role="dialog" aria-modal="true" aria-labelledby="project-notice-title">
+                <p class="project-notice__eyebrow">Aviso</p>
+                <h2 class="project-notice__title" id="project-notice-title">Proyecto en construcción</h2>
+                <p class="project-notice__text">Este mapa forma parte de un proyecto académico en desarrollo. Algunos contenidos, ubicaciones y descripciones pueden seguir en revisión o actualización.</p>
+                <div class="project-notice__actions">
+                    <button class="project-notice__button" id="project-notice-close" type="button">Entendido</button>
+                </div>
+            </div>
+        </div>
         <div id="map">
         </div>
         <script src="js/qgis2web_expressions.js"></script>
@@ -66,7 +475,7 @@
         function addClassToPopupIfMedia(content, popup) {
             var tempDiv = document.createElement('div');
             tempDiv.innerHTML = content;
-            var imgTd = tempDiv.querySelector('td img');
+            var imgTd = tempDiv.querySelector('img');
             if (imgTd) {
                 var src = imgTd.getAttribute('src');
                 if (/\.(jpg|jpeg|png|gif|bmp|webp|avif)$/i.test(src)) {
@@ -109,6 +518,44 @@
                 popup._contentNode.classList.remove('media');
             }
         }
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+        function formatPopupValue(value) {
+            return autolinker.link(escapeHtml(String(value).toLocaleString()));
+        }
+        function buildPopupItem(label, value) {
+            if (value === null || value === undefined || value === '') {
+                return '';
+            }
+            return '<div class="museum-popup__item">' +
+                '<span class="museum-popup__label">' + escapeHtml(label) + '</span>' +
+                '<div class="museum-popup__value">' + formatPopupValue(value) + '</div>' +
+                '</div>';
+        }
+        function buildPopupImage(fileName, altText) {
+            if (fileName === null || fileName === undefined || String(fileName).trim() === '') {
+                return '';
+            }
+            var safeName = String(fileName).replace(/[\\/:]/g, '_').trim().replace(/'/g, '\'').replace(/"/g, '&quot;');
+            return '<figure class="museum-popup__photo">' +
+                '<img src="images/' + safeName + '" alt="' + escapeHtml(altText) + '">' +
+                '</figure>';
+        }
+        function createMuseumMarkerIcon() {
+            return L.divIcon({
+                className: 'museum-marker-wrapper',
+                html: '<div class="museum-marker"><i class="fas fa-university museum-marker__icon"></i></div>',
+                iconSize: [34, 34],
+                iconAnchor: [17, 17],
+                popupAnchor: [0, -16]
+            });
+        }
         var title = new L.Control({'position':'topright'});
         title.onAdd = function (map) {
             this._div = L.DomUtil.create('div', 'info');
@@ -116,7 +563,9 @@
             return this._div;
         };
         title.update = function () {
-            this._div.innerHTML = '<h2>MUSEOS EN EL CASCO VIEJO</h2>';
+            this._div.innerHTML = '<p class="map-title__kicker">UNIFRANZ</p>' +
+                '<h2 class="map-title__heading">Museos en el Casco Viejo</h2>' +
+                '<p class="map-title__subtext">Proyecto acad\u00e9mico | Santa Cruz de la Sierra, Bolivia</p>';
         };
         title.addTo(map);
         var abstract = new L.Control({'position':'topright'});
@@ -134,6 +583,12 @@
                 this._div.innerHTML = 'Datos levantados por los estudianes de rutas y mapas digitales. En construcción...';
         };
         abstract.addTo(map);
+        abstract.show = function () {
+            this._div.classList.remove("abstract");
+            this._div.classList.add("abstractUncollapsed");
+            this._div.innerHTML = '<strong>Contexto</strong>Datos levantados por estudiantes de rutas y mapas digitales. Proyecto en construcci\u00f3n.';
+        };
+        document.getElementById('abstract').innerHTML = '<strong>Contexto</strong>Datos levantados por estudiantes de rutas y mapas digitales. Proyecto en construcci\u00f3n.';
         var zoomControl = L.control.zoom({
             position: 'topleft'
         }).addTo(map);
@@ -150,19 +605,18 @@
         var bounds_group = new L.featureGroup([]);
         function setBounds() {
         }
-        map.createPane('pane_GoogleSatelite_0');
-        map.getPane('pane_GoogleSatelite_0').style.zIndex = 400;
-        var layer_GoogleSatelite_0 = L.tileLayer('http://www.google.cn/maps/vt?lyrs=s@189&gl=cn&x={x}&y={y}&z={z}', {
-            pane: 'pane_GoogleSatelite_0',
+        map.createPane('pane_MapaClaro_0');
+        map.getPane('pane_MapaClaro_0').style.zIndex = 399;
+        var layer_MapaClaro_0 = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            pane: 'pane_MapaClaro_0',
             opacity: 1.0,
-            attribution: '',
+            attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
             minZoom: 1,
             maxZoom: 28,
-            minNativeZoom: 0,
-            maxNativeZoom: 18
+            subdomains: 'abcd'
         });
-        layer_GoogleSatelite_0;
-        map.addLayer(layer_GoogleSatelite_0);
+        layer_MapaClaro_0;
+        map.addLayer(layer_MapaClaro_0);
         function pop_museos_1(feature, layer) {
             var popupContent = '<table>\
                     <tr>\
@@ -204,20 +658,46 @@
 			});
 			layer.bindPopup(content, { maxHeight: 400 });
         }
+        function pop_museos_card_1(feature, layer) {
+            var popupContent = '<div class="museum-popup">' +
+                '<div class="museum-popup__header">' +
+                '<p class="museum-popup__eyebrow">Museo</p>' +
+                '<h3 class="museum-popup__title">' + (feature.properties['nombre_del'] !== null ? escapeHtml(feature.properties['nombre_del']) : 'Sin nombre') + '</h3>' +
+                '</div>' +
+                '<div class="museum-popup__body">' +
+                '<div class="museum-popup__grid">' +
+                buildPopupItem('Tipo', feature.properties['tipo_de_mu']) +
+                buildPopupItem('Material', feature.properties['material_d']) +
+                buildPopupItem('P\u00fablico', feature.properties['tipo_de_p_']) +
+                buildPopupItem('Concurrencia', feature.properties['que_tan_co']) +
+                buildPopupItem('Municipio', feature.properties['municipio_']) +
+                '</div>' +
+                '<div class="museum-popup__gallery">' +
+                buildPopupImage(feature.properties['foto1'], 'Fotograf\u00eda del museo') +
+                buildPopupImage(feature.properties['foto2'], 'Fotograf\u00eda adicional del museo') +
+                '</div>' +
+                '</div>' +
+                '</div>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxWidth: 460, maxHeight: 520 });
+        }
 
         function style_museos_1_0() {
             return {
                 pane: 'pane_museos_1',
-                radius: 8.0,
+                radius: 9.0,
                 opacity: 1,
-                color: 'rgba(243,255,0,1.0)',
+                color: 'rgba(254,243,199,1.0)',
                 dashArray: '',
-                lineCap: 'butt',
-                lineJoin: 'miter',
-                weight: 2.0,
+                lineCap: 'round',
+                lineJoin: 'round',
+                weight: 3.0,
                 fill: true,
                 fillOpacity: 1,
-                fillColor: 'rgba(219,30,42,1.0)',
+                fillColor: 'rgba(220,38,38,1.0)',
                 interactive: true,
             }
         }
@@ -230,25 +710,32 @@
             dataVar: 'json_museos_1',
             layerName: 'layer_museos_1',
             pane: 'pane_museos_1',
-            onEachFeature: pop_museos_1,
+            onEachFeature: pop_museos_card_1,
             pointToLayer: function (feature, latlng) {
                 var context = {
                     feature: feature,
                     variables: {}
                 };
-                return L.circleMarker(latlng, style_museos_1_0(feature));
+                return L.marker(latlng, {
+                    icon: createMuseumMarkerIcon(),
+                    keyboard: true
+                });
             },
         });
-        var cluster_museos_1 = new L.MarkerClusterGroup({showCoverageOnHover: false,
-            spiderfyDistanceMultiplier: 2});
+        var cluster_museos_1 = new L.MarkerClusterGroup({
+            showCoverageOnHover: false,
+            spiderfyDistanceMultiplier: 2
+        });
         cluster_museos_1.addLayer(layer_museos_1);
-
         bounds_group.addLayer(layer_museos_1);
         cluster_museos_1.addTo(map);
+        var baseTree = [
+            {label: '<span class="layer-entry"><span class="layer-entry__symbol layer-entry__symbol--base"></span><span>Mapa claro</span></span>', layer: layer_MapaClaro_0}
+        ];
         var overlaysTree = [
-            {label: '<img src="legend/museos_1.png" /> museos', layer: cluster_museos_1},
-            {label: "Google Satelite", layer: layer_GoogleSatelite_0},]
-        var lay = L.control.layers.tree(null, overlaysTree,{
+            {label: '<span class="layer-entry"><span class="layer-entry__symbol"></span><span>Museos del Casco Viejo</span></span>', layer: cluster_museos_1}
+        ];
+        var lay = L.control.layers.tree(baseTree, overlaysTree,{
             //namedToggle: true,
             //selectorBack: false,
             //closedSymbol: '&#8862; &#x1f5c0;',
@@ -259,6 +746,68 @@
         });
         lay.addTo(map);
 		document.addEventListener("DOMContentLoaded", function() {
+            var projectNotice = document.getElementById('project-notice');
+            var projectNoticeClose = document.getElementById('project-notice-close');
+            if (projectNotice && projectNoticeClose) {
+                projectNoticeClose.addEventListener('click', function() {
+                    projectNotice.hidden = true;
+                });
+            }
+            var controlLayersElement = document.querySelector('.leaflet-control-layers');
+            var toggleLayerControl = document.querySelector('.leaflet-control-layers-toggle');
+            if (controlLayersElement && toggleLayerControl && !controlLayersElement.querySelector('.leaflet-control-layers-header')) {
+                var header = document.createElement('div');
+                header.className = 'leaflet-control-layers-header';
+                var title = document.createElement('div');
+                title.className = 'leaflet-control-layers-title';
+                title.textContent = 'Leyenda';
+                toggleLayerControl.parentNode.insertBefore(header, toggleLayerControl);
+                header.appendChild(title);
+                header.appendChild(toggleLayerControl);
+            }
+            function decorateLayerSections() {
+                var layersListElement = document.querySelector('.leaflet-control-layers-list');
+                if (!layersListElement) {
+                    return;
+                }
+                Array.from(layersListElement.querySelectorAll('.leaflet-control-layers-group-title')).forEach(function(node) {
+                    node.remove();
+                });
+                var labels = Array.from(layersListElement.querySelectorAll('label'));
+                var overlayLabels = [];
+                var baseLabels = [];
+                labels.forEach(function(label) {
+                    var input = label.querySelector('input');
+                    if (!input) {
+                        return;
+                    }
+                    if (input.type === 'checkbox') {
+                        overlayLabels.push(label);
+                    } else if (input.type === 'radio') {
+                        baseLabels.push(label);
+                    }
+                });
+                layersListElement.innerHTML = '';
+                if (overlayLabels.length) {
+                    var overlayTitle = document.createElement('div');
+                    overlayTitle.className = 'leaflet-control-layers-group-title';
+                    overlayTitle.textContent = 'Capa';
+                    layersListElement.appendChild(overlayTitle);
+                    overlayLabels.forEach(function(label) {
+                        layersListElement.appendChild(label);
+                    });
+                }
+                if (baseLabels.length) {
+                    var baseTitle = document.createElement('div');
+                    baseTitle.className = 'leaflet-control-layers-group-title';
+                    baseTitle.textContent = 'Mapa base';
+                    layersListElement.appendChild(baseTitle);
+                    baseLabels.forEach(function(label) {
+                        layersListElement.appendChild(label);
+                    });
+                }
+            }
+            decorateLayerSections();
             // set new Layers List height which considers toggle icon
             function newLayersListHeight() {
                 var layerScrollbarElement = document.querySelector('.leaflet-control-layers-scrollbar');
@@ -271,8 +820,8 @@
                 }
             }
             var isLayersListExpanded = true;
-            var controlLayersElement = document.querySelector('.leaflet-control-layers');
-            var toggleLayerControl = document.querySelector('.leaflet-control-layers-toggle');
+            controlLayersElement = document.querySelector('.leaflet-control-layers');
+            toggleLayerControl = document.querySelector('.leaflet-control-layers-toggle');
             // toggle Collapsed/Expanded and apply new Layers List height
             toggleLayerControl.addEventListener('click', function() {
                 if (isLayersListExpanded) {
@@ -281,6 +830,7 @@
                     controlLayersElement.classList.add('leaflet-control-layers-expanded');
                 }
                 isLayersListExpanded = !isLayersListExpanded;
+                decorateLayerSections();
                 newLayersListHeight()
             });	
 			// apply new Layers List height if toggle layerstree
@@ -288,6 +838,7 @@
 				controlLayersElement.addEventListener('click', function(event) {
 					var toggleLayerHeaderPointer = event.target.closest('.leaflet-layerstree-header-pointer span');
 					if (toggleLayerHeaderPointer) {
+                        decorateLayerSections();
 						newLayersListHeight();
 					}
 				});
